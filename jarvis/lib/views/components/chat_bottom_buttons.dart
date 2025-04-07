@@ -36,7 +36,7 @@ class ChatBottomButtons extends StatelessWidget {
             child: BudShadowButton(
               onTap: onTapHelp,
               icon: AssetsUtil.icon_btn_logo,
-              text: 'Help me buddie',
+              text: 'Help me Jarvis',
             ),
           ),
           SizedBox(width: 22.sp),

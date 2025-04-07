@@ -1,9 +1,9 @@
-# Buddie 🌱
+# Jarvis.NS 🌱
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/MemX-Workspace/Bud-App/pulls)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/MemX-Workspace/Jarvis.NS/pulls)
 
-**BUDDIE** is a mobile application designed to be your centralized life hub, seamlessly recording all personal information (work, life, entertainment, etc.) while delivering enhanced AI interactions. For optimal experience, pair it with our companion smart earphones.
+**JARVIS.NS** is a mobile application designed to be your centralized life hub, seamlessly recording all personal information (work, life, entertainment, etc.) while delivering enhanced AI interactions. For optimal experience, pair it with our companion smart earphones.
 
 ## ✨ Key Features
 - Context-aware dialogue
@@ -27,10 +27,10 @@
 ### Installation
 ```bash
 # Clone repository
-git clone https://github.com/MemX-Workspace/Bud-App.git
+git clone https://github.com/MemX-Workspace/Jarvis.NS.git
 
 # Install dependencies
-cd Bud-App
+cd Jarvis.NS
 flutter pub get
 
 # Release an Android apk
@@ -43,7 +43,7 @@ flutter run
 ## 📱 User Guide
 
 1. The app will guide you through 30-second voiceprint registration when first launched.
-2. For enhanced voice features with Buddie headphones:
+2. For enhanced voice features with Jarvis.NS headphones:
   - Open Settings in app
   - Select "Connect"
   - Ensure earphones are already paired in the system
@@ -70,4 +70,4 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## 📧 Contact
 
-Issue Tracker: https://github.com/MemX-Workspace/Bud-App/issues
+Issue Tracker: https://github.com/MemX-Workspace/Jarvis.NS/issues

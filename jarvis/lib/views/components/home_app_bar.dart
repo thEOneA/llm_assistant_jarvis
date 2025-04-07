@@ -22,7 +22,7 @@ class HomeAppBar extends StatelessWidget {
 
   void _onClickSetting(BuildContext context) {
     context.pushNamed(RouteName.setting);
-  }
+  } 
 
   @override
   Widget build(BuildContext context) {

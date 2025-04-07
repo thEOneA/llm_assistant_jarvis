@@ -1,7 +1,7 @@
 library my_constants;
 
 const String systemPromptOfChat = """
-You are Buddie, an proactive assistant that balances efficiency with contextual awareness. Respond in JSON strictly following these rules:
+You are Jarvis.NS, an proactive assistant that balances efficiency with contextual awareness. Respond in JSON strictly following these rules:
 
 # Core Principle
 - Default to direct answers (Situation 1) unless ALL required parameters are missing
@@ -74,7 +74,7 @@ Output: {"content": "One moment.", "keywords": ["meeting", "todo"], "time": "202
 """;
 
 const String systemPromptOfChat2 = """
-You are Buddie, an proactive assistant that balances efficiency with contextual awareness. Respond in JSON strictly following these rules:
+You are Jarvis.NS, an proactive assistant that balances efficiency with contextual awareness. Respond in JSON strictly following these rules:
 
 # Core Principle
 - Never ask clarifying questions unless absolutely necessary
@@ -96,38 +96,40 @@ Relative chat history:
 
 const Map<String, Object> responseSchemaOfChat = {
   "name": "Chat",
-  "description": "The response schema for structured JSON output in the chat system, supporting various response types for the user's assistant (e.g., direct responses, historical query requests, conversation ending).",
+  "description":
+      "The response schema for structured JSON output in the chat system, supporting various response types for the user's assistant (e.g., direct responses, historical query requests, conversation ending).",
   "strict": true,
   "schema": {
     "type": "object",
     "properties": {
-        "content": {
-            "type": "string",
-            "description": "The assistant's reply content to the user, containing the main response."
-        },
-        "queryStartTime": {
-            "type": ["string", "null"],
-            "description": "The start timestamp for historical data retrieval, if needed."
-        },
-        "queryEndTime": {
-            "type": ["string", "null"],
-            "description": "The end timestamp for historical data retrieval, if needed."
-        },
-        "isEnd": {
-            "type": "boolean",
-            "description": "A flag indicating if the conversation has ended."
-        }
+      "content": {
+        "type": "string",
+        "description":
+            "The assistant's reply content to the user, containing the main response."
+      },
+      "queryStartTime": {
+        "type": ["string", "null"],
+        "description":
+            "The start timestamp for historical data retrieval, if needed."
+      },
+      "queryEndTime": {
+        "type": ["string", "null"],
+        "description":
+            "The end timestamp for historical data retrieval, if needed."
+      },
+      "isEnd": {
+        "type": "boolean",
+        "description": "A flag indicating if the conversation has ended."
+      }
     },
     "additionalProperties": false,
-    "required": [
-        "content"
-    ]
+    "required": ["content"]
   }
 };
 
 const String systemPromptOfSummary = """
   You excel at identifying themes in conversations and generating concise summaries. 
-  Based on a dialogue between the user and their assistant Buddie, please identify and summarize all main themes, grouping relevant exchanges under the same theme when possible. 
+  Based on a dialogue between the user and their assistant Jarvis.NS, please identify and summarize all main themes, grouping relevant exchanges under the same theme when possible. 
   Specify the time range for each theme, and avoid creating excessive theme divisions.\n
   Note:\n
     1. Limit the themes to the following four categories: Study, Life, Work, Entertainment.\n
@@ -145,13 +147,13 @@ const String systemPromptOfSummary = """
         "subject": "Study", 
         "start_time": "2024-10-15 23:30", 
         "end_time": "2024-10-15 23:59", 
-        "abstract": "The user and Buddie discussed recent research progress."
+        "abstract": "The user and Jarvis.NS discussed recent research progress."
       }, 
       {
         "subject": "Work", 
         "start_time": "2024-10-15 16:00", 
         "end_time": "2024-10-15 17:00", 
-        "abstract": "The user and Buddie discussed Android code development, covering the deployment and retrieval strategies of the ObjectBox vector database."
+        "abstract": "The user and Jarvis.NS discussed Android code development, covering the deployment and retrieval strategies of the ObjectBox vector database."
       }, 
       ...
     ]
@@ -161,7 +163,7 @@ const String systemPromptOfSummary = """
 
 const String systemPromptOfSummaryReflection = """
   You are a seasoned and meticulous literature professor tasked with reviewing a student's assignment. 
-  The assignment involves analyzing a conversation between a user and their assistant Buddie, categorizing it into relevant themes, and generating summaries for each theme. 
+  The assignment involves analyzing a conversation between a user and their assistant Jarvis.NS, categorizing it into relevant themes, and generating summaries for each theme. 
   The themes are limited to four categories: Study, Life, Work, and Entertainment. 
   Importantly, the categorization should take into account the overall context, ensuring that each theme accurately reflects the primary content of the conversation.\n\n
   The assignment will be evaluated on several criteria:\n
@@ -190,13 +192,13 @@ const String systemPromptOfNewSummary = """
         "subject": "Study", 
         "start_time": "2024-10-15 23:30", 
         "end_time": "2024-10-15 23:59", 
-        "abstract": "The user and Buddie discussed recent research progress."
+        "abstract": "The user and Jarvis.NS discussed recent research progress."
       }, 
       {
         "subject": "Work", 
         "start_time": "2024-10-15 16:00", 
         "end_time": "2024-10-15 17:00", 
-        "abstract": "The user and Buddie discussed Android code development, covering the deployment and retrieval strategies of the ObjectBox vector database."
+        "abstract": "The user and Jarvis.NS discussed Android code development, covering the deployment and retrieval strategies of the ObjectBox vector database."
       }, 
       ...
     ]
@@ -214,15 +216,17 @@ const String systemPromptOfHelp = """
 """;
 
 String getUserPromptOfSummaryGeneration(String chatHistory) {
-  return "Dialogue between the user and their assistant Buddie:\n$chatHistory";
+  return "Dialogue between the user and their assistant Jarvis.NS:\n$chatHistory";
 }
 
-String getUserPromptOfSummaryReflectionGeneration(String chatHistory, String summary) {
-  return "Below is the assignment content:\nDialogue between the user and their assistant Buddie:\n$chatHistory\n\nThe student’s submission:\n$summary";
+String getUserPromptOfSummaryReflectionGeneration(
+    String chatHistory, String summary) {
+  return "Below is the assignment content:\nDialogue between the user and their assistant Jarvis.NS:\n$chatHistory\n\nThe student's submission:\n$summary";
 }
 
-String getUserPromptOfNewSummaryGeneration(String chatHistory, String summary, String comments) {
-  return "Dialogue between the user and their assistant Buddie:\n$chatHistory\nThemes and Summaries Needing Further Revision:\n$summary\nGuidance and Feedback:\n$comments";
+String getUserPromptOfNewSummaryGeneration(
+    String chatHistory, String summary, String comments) {
+  return "Dialogue between the user and their assistant Jarvis.NS:\n$chatHistory\nThemes and Summaries Needing Further Revision:\n$summary\nGuidance and Feedback:\n$comments";
 }
 
 const String systemPromptOfTask = """

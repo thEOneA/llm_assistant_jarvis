@@ -61,7 +61,8 @@ class RecordServiceHandler extends TaskHandler {
 
     await _chatManager.init(selectedModel: _selectedModel);
 
-    final isAlwaysOn = (await FlutterForegroundTask.getData(key: 'isRecording')) ?? true;
+    final isAlwaysOn =
+        (await FlutterForegroundTask.getData(key: 'isRecording')) ?? true;
     if (isAlwaysOn) {
       _asrManager = AsrManager();
       await _startRecord();
@@ -139,6 +140,7 @@ class RecordServiceHandler extends TaskHandler {
     await _initAsr();
 
     _startMicrophone();
+    _inDialogMode = true; // Enable dialog mode when recording starts
 
     FlutterForegroundTask.saveData(key: 'isRecording', value: true);
     // create stop action button
@@ -155,7 +157,12 @@ class RecordServiceHandler extends TaskHandler {
     _onMicrophone = true;
     if (_recordStream != null) return;
     const config = RecordConfig(
-        encoder: AudioEncoder.pcm16bits, sampleRate: 16000, numChannels: 1);
+        encoder: AudioEncoder.pcm16bits,
+        sampleRate: 16000,
+        numChannels: 1,
+        echoCancel: true,
+        noiseSuppress: true,
+        autoGain: false);
 
     _record = AudioRecorder();
     _recordStream = await _record.startStream(config);
@@ -165,12 +172,33 @@ class RecordServiceHandler extends TaskHandler {
     });
   }
 
-  void _processAudioData(data, {String category = RecordEntity.categoryDefault}) async {
+  void _processAudioData(data,
+      {String category = RecordEntity.categoryDefault}) async {
     if (_vad == null || _nonstreamRecognizer == null) {
       return;
     }
 
+    // Skip processing if TTS is playing
+    if (_isUsingCloudServices && _cloudTts.isPlaying) {
+      return;
+    }
+
     final samplesFloat32 = convertBytesToFloat32(Uint8List.fromList(data));
+
+    // Check audio amplitude to help filter out feedback
+    double maxAmplitude = 0;
+    for (var sample in samplesFloat32) {
+      maxAmplitude = maxAmplitude.abs() > sample.abs() ? maxAmplitude : sample;
+    }
+    if (maxAmplitude < 0.1) {
+      // Skip processing if audio is too quiet
+      return;
+    }
+
+    // Add a longer delay after VAD detection to avoid feedback
+    if (_vad!.isDetected()) {
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
 
     _vad!.acceptWaveform(samplesFloat32);
 
@@ -301,6 +329,8 @@ class RecordServiceHandler extends TaskHandler {
   }
 
   Future<void> _stopRecord() async {
+    _inDialogMode = false; // Disable dialog mode when recording stops
+
     if (_recordStream != null) {
       await _record.stop();
       await _record.dispose();
@@ -328,6 +358,51 @@ class RecordServiceHandler extends TaskHandler {
       await _record.dispose();
       _recordStream = null;
       _onMicrophone = false;
+    }
+  }
+
+  Future<void> _handleAsrResult(String text, {String? operationId}) async {
+    if (text.isEmpty) return;
+
+    FlutterForegroundTask.sendDataToMain({
+      'currentText': text,
+      'isFinished': true,
+      'content': text,
+    });
+
+    if (_inDialogMode) {
+      _currentSubscription?.cancel();
+      _currentSubscription =
+          _chatManager.createStreamingRequest(text: text).listen((response) {
+        try {
+          final res = jsonDecode(response);
+          final content = res['content'] ?? res['delta'];
+          final isFinished = res['isFinished'];
+
+          if (operationId != null) {
+            LatencyLogger.recordEnd(operationId, phase: 'llm');
+          }
+
+          FlutterForegroundTask.sendDataToMain({
+            'currentText': text,
+            'isFinished': false,
+            'content': content,
+          });
+
+          if (isFinished) {
+            if (_isUsingCloudServices) {
+              _cloudTts.speak(content, operationId: operationId);
+            } else {
+              _flutterTts.speak(content);
+            }
+            _objectBoxService.insertDialogueRecord(
+                RecordEntity(role: 'assistant', content: content));
+            _chatManager.addChatSession('assistant', content);
+          }
+        } catch (e) {
+          print('Error processing LLM response: $e');
+        }
+      });
     }
   }
 }

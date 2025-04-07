@@ -15,9 +15,11 @@ import 'latency_logger.dart';
 
 class CloudTts {
   late String _openaiApiKey;
-  static const String defaultBaseUrl = 'https://one-api.bud.inc/v1/audio/speech';
+  static const String defaultBaseUrl =
+      'https://one-api.bud.inc/v1/audio/speech';
 
-  final FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer(logLevel: Level.error);
+  final FlutterSoundPlayer _audioPlayer =
+      FlutterSoundPlayer(logLevel: Level.error);
 
   StreamController<String>? _textQueue = StreamController<String>();
 
@@ -30,31 +32,55 @@ class CloudTts {
   bool get isAvailable => _openaiApiKey.isNotEmpty;
 
   Future<void> init() async {
-    LlmConfigEntity? config = ObjectBoxService().getConfigsByProvider("OpenAI");
-    if (config != null && config.apiKey != null && config.baseUrl != null) {
-      _openaiApiKey = config.apiKey!;
-    } else {
-      _openaiApiKey = await FlutterForegroundTask.getData(key: 'llmToken');
-    }
-    if (Platform.isAndroid) {
-      await _audioPlayer.openPlayer(isBGService: true);
-    } else {
-      await _audioPlayer.openPlayer();
+    log('Initializing CloudTTS service...');
+
+    try {
+      LlmConfigEntity? config =
+          ObjectBoxService().getConfigsByProvider("OpenAI");
+      if (config != null && config.apiKey != null && config.baseUrl != null) {
+        _openaiApiKey = config.apiKey!;
+        log('Using API key from ObjectBox configuration');
+      } else {
+        log('Fetching API key from FlutterForegroundTask...');
+        _openaiApiKey = await FlutterForegroundTask.getData(key: 'llmToken');
+        if (_openaiApiKey.isEmpty) {
+          log('Error: API key is empty');
+          throw Exception('API key is empty');
+        }
+        log('Successfully retrieved API key from FlutterForegroundTask');
+      }
+
+      if (Platform.isAndroid) {
+        log('Opening audio player for Android...');
+        await _audioPlayer.openPlayer(isBGService: true);
+      } else {
+        log('Opening audio player for iOS...');
+        await _audioPlayer.openPlayer();
+      }
+      log('CloudTTS service initialized successfully');
+    } catch (e) {
+      log('Error initializing CloudTTS service: $e');
+      rethrow;
     }
   }
 
   Future<void> _start({String? operationId}) async {
     log('Initializing OpenAI TTS streaming...');
 
-    await _audioPlayer.startPlayerFromStream(
-      sampleRate: 24000,
-      codec: Codec.pcm16,
-      interleaved: true,
-      numChannels: 1,
-      bufferSize: 8192
-    );
+    try {
+      await _audioPlayer.startPlayerFromStream(
+          sampleRate: 24000,
+          codec: Codec.pcm16,
+          interleaved: true,
+          numChannels: 1,
+          bufferSize: 8192);
 
-    _processTextQueue();
+      _processTextQueue();
+      log('TTS streaming initialized successfully');
+    } catch (e) {
+      log('Error starting TTS streaming: $e');
+      rethrow;
+    }
   }
 
   Future<void> _processTextQueue() async {
@@ -77,19 +103,21 @@ class CloudTts {
       "response_format": "pcm",
     });
 
-    _httpClient = HttpClient();
-    final request = await _httpClient!.postUrl(url);
-    request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-    request.headers.set(HttpHeaders.authorizationHeader, "Bearer $_openaiApiKey");
-    request.add(utf8.encode(requestBody));
+    try {
+      _httpClient = HttpClient();
+      final request = await _httpClient!.postUrl(url);
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.headers
+          .set(HttpHeaders.authorizationHeader, "Bearer $_openaiApiKey");
+      request.add(utf8.encode(requestBody));
 
-    final response = await request.close();
+      log('Sending TTS request...');
+      final response = await request.close();
 
-    if (response.statusCode == 200) {
-      // log('Receiving audio stream...');
-      Uint8List? _remainingByte;
-      _responseSubscription = response.listen(
-        (chunk) async {
+      if (response.statusCode == 200) {
+        log('Receiving audio stream...');
+        Uint8List? _remainingByte;
+        _responseSubscription = response.listen((chunk) async {
           List<int> processedChunk = [];
           if (_remainingByte != null) {
             processedChunk.add(_remainingByte![0]);
@@ -108,18 +136,19 @@ class CloudTts {
           }
 
           _audioPlayer.uint8ListSink?.add(Uint8List.fromList(chunk));
-        },
-        onError: (e) {
+        }, onError: (e) {
           log('Error receiving audio chunk: $e');
-        },
-        onDone: () {
+        }, onDone: () {
           log('Audio stream completed');
-        }
-      );
-    } else {
-      log('Error: ${response.statusCode}');
-      String responseBody = await response.transform(utf8.decoder).join();
-      log('Response: $responseBody');
+        });
+      } else {
+        log('Error: ${response.statusCode}');
+        String responseBody = await response.transform(utf8.decoder).join();
+        log('Response: $responseBody');
+      }
+    } catch (e) {
+      log('Error in _streamTtsAudio: $e');
+      rethrow;
     }
   }
 
@@ -146,5 +175,6 @@ class CloudTts {
 
     _textQueue?.close();
     _textQueue = StreamController<String>();
+    log('Playback stopped');
   }
 }

@@ -241,7 +241,7 @@ class ChatController extends ChangeNotifier{
     if (text.isNotEmpty) {
       textController.clear();
       if (text == systemPromptOfHelp) {
-        displayText = "Help me Buddie.";
+        displayText = "Help me Jarvis.";
         chatManager.updateChatHistory();
       } else {
         displayText = text;

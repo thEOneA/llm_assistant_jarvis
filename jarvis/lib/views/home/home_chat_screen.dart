@@ -15,6 +15,8 @@ import 'package:go_router/go_router.dart';
 import '../../constants/prompt_constants.dart';
 import '../../controllers/chat_controller.dart';
 import '../../controllers/record_controller.dart';
+import '../../services/translation_service.dart';
+import '../../widgets/translation_controls.dart';
 
 class HomeChatScreen extends StatefulWidget {
   final RecordScreenController? controller;
@@ -29,6 +31,7 @@ class _HomeChatScreenState extends State<HomeChatScreen> {
   late ChatController _chatController;
   final FocusNode _focusNode = FocusNode();
   late RecordScreenController _audioController;
+  late TranslationService _translationService;
 
   final _listenable = IndicatorStateListenable();
   bool _shrinkWrap = false;
@@ -56,6 +59,7 @@ class _HomeChatScreenState extends State<HomeChatScreen> {
     _focusNode.dispose();
     _chatController.dispose();
     _listenable.removeListener(_onHeaderChange);
+    _translationService.dispose();
     super.dispose();
   }
 
@@ -71,6 +75,8 @@ class _HomeChatScreenState extends State<HomeChatScreen> {
     _chatController = ChatController(
       onNewMessage: onNewMessage,
     );
+    _translationService = TranslationService();
+    _translationService.initialize();
   }
 
   void _onHeaderChange() {
@@ -195,6 +201,18 @@ class _HomeChatScreenState extends State<HomeChatScreen> {
     return overflow;
   }
 
+  void _onModeChanged(TranslationMode mode) {
+    setState(() {
+      _translationService.setMode(mode);
+    });
+  }
+
+  void _onLanguageChanged(String fromCode, String toCode) {
+    setState(() {
+      _translationService.setLanguages(fromCode, toCode);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return KeyboardDismisser(
@@ -216,6 +234,12 @@ class _HomeChatScreenState extends State<HomeChatScreen> {
                     bluetoothConnected: _audioController.connectionState,
                     onTapBluetooth: _onClickBluetooth,
                   ),
+                ),
+                SizedBox(height: 18.sp),
+                TranslationControls(
+                  translationService: _translationService,
+                  onModeChanged: _onModeChanged,
+                  onLanguageChanged: _onLanguageChanged,
                 ),
                 SizedBox(height: 18.sp),
                 Expanded(
@@ -250,18 +274,19 @@ class _HomeChatScreenState extends State<HomeChatScreen> {
                                 overflow
                                     ? SliverList(
                                         delegate: SliverChildBuilderDelegate(
-                                          (BuildContext context, int i){
-                                            if(i>=messageList.length){
+                                          (BuildContext context, int i) {
+                                            if (i >= messageList.length) {
                                               return SizedBox();
                                             }
-                                            return  _buildMsg(messageList[i]);
-                                            },
+                                            return _buildMsg(messageList[i]);
+                                          },
                                           childCount: messageList.length,
                                         ),
                                       )
                                     : SliverToBoxAdapter(
                                         child: ConstrainedBox(
-                                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                                          constraints: BoxConstraints(
+                                              minHeight: constraints.maxHeight),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: messageList

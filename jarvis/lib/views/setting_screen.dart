@@ -88,7 +88,6 @@ class _SettingScreenState extends State<SettingScreen> {
     context.pushNamed(RouteName.about);
   }
 
-
   void _onClickSetup() {}
 
   void _onClickHelpAndFeedback() {}
@@ -222,11 +221,13 @@ class MemberWidget extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Buddie member',
+                    'Jarvis.NS member',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: isLightMode ? const Color.fromRGBO(0, 0, 0, 0.6) : const Color(0xFF29BBC6),
+                      color: isLightMode
+                          ? const Color.fromRGBO(0, 0, 0, 0.6)
+                          : const Color(0xFF29BBC6),
                     ),
                   ),
                 ),
@@ -239,7 +240,8 @@ class MemberWidget extends StatelessWidget {
           ),
           BudCard(
             radius: 8.sp,
-            color: isLightMode ? const Color(0xFF3D4A4F) : const Color(0xFF0A1F21),
+            color:
+                isLightMode ? const Color(0xFF3D4A4F) : const Color(0xFF0A1F21),
             padding: EdgeInsets.all(12.sp),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -263,7 +265,8 @@ class MemberWidget extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: MemberLinearProgressIndicator(value: remainMinute / totalMinute),
+                  child: MemberLinearProgressIndicator(
+                      value: remainMinute / totalMinute),
                 ),
                 Text(
                   '$remainMinute minutes remaining (out of $totalMinute minutes)',
@@ -340,7 +343,9 @@ class SettingListTile extends StatelessWidget {
         child: Row(
           children: [
             BudCard(
-              color: isLightMode ? const Color(0xFFEEEEEE) : const Color(0x1AEEEEEE),
+              color: isLightMode
+                  ? const Color(0xFFEEEEEE)
+                  : const Color(0x1AEEEEEE),
               radius: 5.sp,
               padding: EdgeInsets.all(5.sp),
               child: BudIcon(
@@ -368,7 +373,9 @@ class SettingListTile extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
-                        color: isLightMode ? const Color(0xFF999999) : const Color(0x99FFFFFF),
+                        color: isLightMode
+                            ? const Color(0xFF999999)
+                            : const Color(0x99FFFFFF),
                       ),
                     )
                 ],
